@@ -3,6 +3,7 @@ import {
   useCallback,
   useState,
   useMemo,
+  useEffect,
   useContext,
 } from "react";
 import { Box, ThemeProvider } from "@mui/material";
@@ -24,13 +25,21 @@ export const useAppThemeContext = () => {
 };
 
 export const AppThemeProvider: React.FC<IAppThemeProvider> = ({ children }) => {
-  const [themeName, setThemeName] = useState<"light" | "dark">("light");
+  const initialTheme =
+    (localStorage.getItem("theme") as "light" | "dark") || "light";
+  const [themeName, setThemeName] = useState<"light" | "dark">(initialTheme);
 
   const toggleTheme = useCallback(() => {
-    setThemeName((oldThemeName) =>
-      oldThemeName === "light" ? "dark" : "light"
-    );
+    setThemeName((oldThemeName) => {
+      const newTheme = oldThemeName === "light" ? "dark" : "light";
+      localStorage.setItem("theme", newTheme); // Save the new theme to localStorage
+      return newTheme;
+    });
   }, []);
+
+  useEffect(() => {
+    localStorage.setItem("theme", themeName);
+  }, [themeName]);
 
   const theme = useMemo(() => {
     if (themeName === "light") return LightTheme;
